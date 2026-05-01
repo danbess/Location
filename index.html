@@ -268,7 +268,7 @@
         }
 
         function ouvrirPageSignatureAvecPdf(result) {
-            const signatureUrl = new URL("https://locationarcachon.netlify.app/signature_locataire.html");
+            const signatureUrl = new URL(window.location.origin);
 
             const payload = {
                 nom: document.getElementById('loc_nom').value,
