@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editeur La Diva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .admin-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+
+        .h-section {
+            background: #0d6efd;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0 15px 0;
+            font-weight: bold;
+        }
+
+        label {
+            font-weight: 600;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input.form-control {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+        }
+
+        .btn-lg {
+            padding: 15px;
+            font-weight: bold;
+        }
+
+        input.champ-total {
+            background-color: #e8f4fd !important;
+            border-color: #90caf9 !important;
+            color: #1565c0;
+            font-weight: 700;
+        }
+
+        input.champ-taxe {
+            background-color: #fff8e1 !important;
+            border-color: #ffd54f !important;
+            color: #e65100;
+            font-weight: 600;
+        }
+
+        input.champ-acompte {
+            background-color: #f3e5f5 !important;
+            border-color: #ce93d8 !important;
+            color: #6a1b9a;
+            font-weight: 600;
+        }
+
+        input.champ-solde {
+            background-color: #e8f5e9 !important;
+            border-color: #81c784 !important;
+            color: #1b5e20;
+            font-weight: 700;
+            font-size: 17px !important;
+        }
+
+        .btn-generate-sig {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+
+        .btn-generate-sig:hover {
+            background: linear-gradient(135deg, #218838, #1aad82);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-card">
+        <h3 class="text-center">Préparation Contrat</h3>
+
+        <form id="proprioForm">
+            <div class="h-section">PAGE 1 : LE LOCATAIRE</div>
+            <label>Nom et Prénom</label>
+            <input type="text" id="loc_nom" class="form-control" placeholder="M. Jean DUPONT">
+
+            <label>Adresse</label>
+            <input type="text" id="loc_adr" class="form-control" placeholder="12 rue des Fleurs, 75000 Paris">
+
+            <label>Téléphone</label>
+            <input type="tel" id="loc_tel" class="form-control" placeholder="06 00 00 00 00">
+
+            <label>Email</label>
+            <input type="email" id="loc_mail" class="form-control" placeholder="jean.dupont@mail.com">
+
+            <div class="h-section">PAGE 2 : SÉJOUR & PRIX</div>
+            <div class="row">
+                <div class="col-6">
+                    <label>Date Entrée</label>
+                    <input type="text" id="d_in" class="form-control datepicker" placeholder="15/07/2026" readonly>
+                </div>
+                <div class="col-6">
+                    <label>Date Sortie</label>
+                    <input type="text" id="d_out" class="form-control datepicker" placeholder="22/07/2026" readonly>
+                </div>
+            </div>
+
+            <label>Montant Total (€) <span class="text-muted fw-normal fst-italic" style="font-size:13px;">— calculé
+                    automatiquement (Location + Taxe)</span></label>
+            <input type="text" id="p_total" class="form-control champ-total" placeholder="—" readonly>
+
+            <label>Location (€)</label>
+            <input type="text" id="p_location" class="form-control champ-taxe" placeholder="255">
+
+            <label>Taxe de séjour (€)</label>
+            <input type="text" id="p_taxe" class="form-control champ-taxe" placeholder="15.50">
+
+            <label>Nombre d'adultes</label>
+            <input type="number" id="nb_adultes" class="form-control" placeholder="0">
+
+            <label>Nombre d'enfants (-18 ans)</label>
+            <input type="number" id="nb_enfants" class="form-control" placeholder="0">
+
+            <label>Acompte (€) <span class="text-muted fw-normal fst-italic" style="font-size:13px;">— calculé
+                    automatiquement (30% du total)</span></label>
+            <input type="text" id="p_acompte" class="form-control champ-acompte" placeholder="—" readonly>
+
+            <label>Solde (€) <span class="text-muted fw-normal fst-italic" style="font-size:13px;">— calculé
+                    automatiquement (Location + Taxe − Acompte)</span></label>
+            <input type="text" id="p_solde" class="form-control champ-solde" placeholder="—" readonly>
+
+            <div class="h-section">PAGE 3 : PROPRIÉTAIRE</div>
+            <label>Date de signature (Propriétaire)</label>
+            <input type="text" id="date_proprio" class="form-control datepicker" placeholder="23/04/2026" readonly>
+
+            <div class="mt-4 alert alert-info small">
+                Note : Le Lieu et la Date du locataire restent vides pour lui.
+            </div>
+
+            <div id="pdfStatus" class="mt-3 alert alert-secondary small">⏳ Chargement du PDF modèle en cours…</div>
+
+            <!-- DEUX BOUTONS -->
+            <div class="d-grid gap-3 mt-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100 shadow">
+                    📄 GÉNÉRER LE PDF SEUL
+                </button>
+                <button type="button" id="btnGenererSignature" class="btn btn-success w-100">
+                    Générer lien signature
+                </button>
+
+                <div id="resultatLien" style="margin-top:15px;"></div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // PDF modèle chargé automatiquement
+        let pdfModelBytes = null;
+
+        async function chargerPdfModele() {
+            const statusEl = document.getElementById('pdfStatus');
+            try {
+                const response = await fetch('Location_Appart_Arcachon_first.pdf');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                pdfModelBytes = await response.arrayBuffer();
+                statusEl.className = 'mt-3 alert alert-success small';
+                statusEl.textContent = '✅ PDF modèle chargé automatiquement : Location_Appart_Arcachon_first.pdf';
+            } catch (err) {
+                statusEl.className = 'mt-3 alert alert-danger small';
+                statusEl.textContent = '❌ Impossible de charger le PDF modèle. Assurez-vous que "Location_Appart_Arcachon_first.pdf" est dans le même dossier.';
+                console.error('Erreur chargement PDF:', err);
+            }
+        }
+
+        function calculerMontants() {
+            const location = parseFloat(document.getElementById('p_location').value) || 0;
+            const taxe = parseFloat(document.getElementById('p_taxe').value) || 0;
+            const total = Math.round((location + taxe) * 100) / 100;
+            const acompte = Math.round(total * 0.30 * 100) / 100;
+            const solde = Math.round((location + taxe - acompte) * 100) / 100;
+            document.getElementById('p_total').value = total > 0 ? total.toFixed(2) : '';
+            document.getElementById('p_acompte').value = acompte > 0 ? acompte.toFixed(2) : '';
+            document.getElementById('p_solde').value = solde > 0 ? solde.toFixed(2) : '';
+        }
+
+        // Récupère les valeurs du formulaire et génère le PDF rempli (retourne les bytes)
+        async function genererPdfBytes() {
+            const v = {
+                nom: document.getElementById('loc_nom').value,
+                adr: document.getElementById('loc_adr').value,
+                tel: document.getElementById('loc_tel').value,
+                mail: document.getElementById('loc_mail').value,
+                in: document.getElementById('d_in').value,
+                out: document.getElementById('d_out').value,
+                total: document.getElementById('p_total').value + " €",
+                location: document.getElementById('p_location').value + " €",
+                taxe: document.getElementById('p_taxe').value + " €",
+                adultes: document.getElementById('nb_adultes').value,
+                enfants: document.getElementById('nb_enfants').value,
+                acompte: document.getElementById('p_acompte').value + " €",
+                solde: document.getElementById('p_solde').value + " €",
+                dProprio: document.getElementById('date_proprio').value
+            };
+
+            if (!pdfModelBytes) {
+                alert("Le PDF modèle n'est pas encore chargé. Vérifiez que 'Location_Appart_Arcachon_first.pdf' est dans le même dossier.");
+                return null;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.load(pdfModelBytes);
+            const p = pdfDoc.getPages();
+
+            // PAGE 1 : LOCATAIRE
+            p[0].drawText(v.nom, { x: 140, y: 432, size: 10 });
+            p[0].drawText(v.adr, { x: 160, y: 414, size: 9 });
+            p[0].drawText(v.tel, { x: 175, y: 395, size: 10 });
+            p[0].drawText(v.mail, { x: 150, y: 377, size: 10 });
+
+            // PAGE 2 : SÉJOUR & PAIEMENT
+            p[1].drawText(v.in, { x: 171, y: 726, size: 10 });
+            p[1].drawText(v.out, { x: 404, y: 726, size: 10 });
+            p[1].drawText(v.total, { x: 266, y: 615, size: 10 });
+            p[1].drawText(v.location, { x: 155, y: 600, size: 10 });
+            p[1].drawText(v.taxe, { x: 370, y: 600, size: 10 });
+            p[1].drawText(v.adultes, { x: 212, y: 586, size: 10 });
+            p[1].drawText(v.enfants, { x: 410, y: 586, size: 10 });
+            p[1].drawText(v.acompte, { x: 265, y: 498, size: 10 });
+            p[1].drawText(v.solde, { x: 235, y: 459, size: 10 });
+
+            // PAGE 3 : SIGNATURE PROPRIÉTAIRE
+            p[2].drawText(v.dProprio, { x: 496, y: 155, size: 10 });
+
+            return { bytes: await pdfDoc.save(), nom: v.nom };
+        }
+
+        // Convertit un ArrayBuffer en Base64
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function ouvrirPageSignatureAvecPdf(result) {
+            const signatureUrl = new URL("https://locationarcachon.netlify.app/signature_locataire.html");
+
+            const payload = {
+                nom: document.getElementById('loc_nom').value,
+                adr: document.getElementById('loc_adr').value,
+                tel: document.getElementById('loc_tel').value,
+                mail: document.getElementById('loc_mail').value,
+                entree: document.getElementById('d_in').value,
+                sortie: document.getElementById('d_out').value,
+                prix: document.getElementById('p_location').value,
+                taxe: document.getElementById('p_taxe').value,
+                adultes: document.getElementById('nb_adultes').value,
+                enfants: document.getElementById('nb_enfants').value,
+                dateproprio: document.getElementById('date_proprio').value
+            };
+
+            Object.entries(payload).forEach(([key, value]) => {
+                if (value) {
+                    signatureUrl.searchParams.set(key, value);
+                }
+            });
+
+            return signatureUrl.toString();
+        }
+
+        // BOUTON 1 : Télécharger le PDF seul (comportement original)
+        document.getElementById('proprioForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            try {
+                const result = await genererPdfBytes();
+                if (!result) return;
+                const blob = new Blob([result.bytes], { type: "application/pdf" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Contrat_PreRempli_${result.nom}.pdf`;
+                link.click();
+            } catch (err) {
+                alert("Erreur lors de la génération du PDF : " + err.message);
+                console.error(err);
+            }
+        });
+
+        // BOUTON 2 : Générer le fichier HTML de signature avec le PDF intégré
+        document.getElementById('btnGenererSignature').addEventListener('click', async function () {
+            try {
+                const result = await genererPdfBytes();
+                if (!result) return;
+
+                const finalUrl = ouvrirPageSignatureAvecPdf(result);
+
+                const container = document.getElementById('resultatLien');
+
+                container.innerHTML = `
+        <div style="background:#f1f3f5;padding:12px;border-radius:8px;">
+            <div style="margin-bottom:8px;font-weight:bold;">🔗 Lien locataire :</div>
+            
+            <input type="text" id="inputLien" value="${finalUrl}" readonly 
+            style="width:100%;padding:6px;margin-bottom:10px;">
+
+            <button id="btnCopier" type="button" class="btn btn-primary w-100">
+                📋 Copier le lien
+            </button>
+
+            <div style="margin-top:10px;font-size:12px;color:#6c757d;">
+                Ce lien est plus court et recharge le contrat depuis le modèle. Il fonctionne sur smartphone et peut être envoyé par mail.
+            </div>
+        </div>
+    `;
+
+                document.getElementById('btnCopier').addEventListener('click', function (e) {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(finalUrl);
+                    this.innerText = "✅ Lien bien copié";
+                });
+            } catch (err) {
+                alert("Erreur : " + err.message);
+                console.error(err);
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            chargerPdfModele();
+
+            ['p_location', 'p_taxe'].forEach(id => {
+                document.getElementById(id).addEventListener('input', calculerMontants);
+            });
+
+            const optionsCalendrier = {
+                locale: 'fr',
+                dateFormat: 'd/m/Y',
+                allowInput: false,
+                disableMobile: false,
+                defaultDate: 'today'
+            };
+            flatpickr('#d_in', optionsCalendrier);
+            flatpickr('#d_out', optionsCalendrier);
+            flatpickr('#date_proprio', optionsCalendrier);
+
+            // Valeurs de démo
+            document.getElementById('loc_nom').value = "Jean DUPONT";
+            document.getElementById('loc_adr').value = "12 rue des Fleurs, 75000 Paris";
+            document.getElementById('loc_tel').value = "0600000000";
+            document.getElementById('loc_mail').value = "jean@test.com";
+            const aujourdHui = new Date();
+            document.getElementById('d_in')._flatpickr.setDate(aujourdHui, true, 'd/m/Y');
+            document.getElementById('d_out')._flatpickr.setDate(aujourdHui, true, 'd/m/Y');
+            document.getElementById('p_location').value = "260";
+            document.getElementById('p_taxe').value = "14.4";
+            document.getElementById('nb_adultes').value = "2";
+            document.getElementById('nb_enfants').value = "1";
+            calculerMontants();
+            document.getElementById('date_proprio')._flatpickr.setDate(aujourdHui, true, 'd/m/Y');
+        });
+    </script>
+</body>
+
+</html>
