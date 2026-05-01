@@ -267,29 +267,7 @@
             return window.btoa(binary);
         }
 
-        function ouvrirPageSignatureAvecPdf(result) {
-            const signatureUrl = window.location.origin + "/signature_locataire.html";
-
-            const payload = {
-                nom: document.getElementById('loc_nom').value,
-                adr: document.getElementById('loc_adr').value,
-                tel: document.getElementById('loc_tel').value,
-                mail: document.getElementById('loc_mail').value,
-                entree: document.getElementById('d_in').value,
-                sortie: document.getElementById('d_out').value,
-                prix: document.getElementById('p_location').value,
-                taxe: document.getElementById('p_taxe').value,
-                adultes: document.getElementById('nb_adultes').value,
-                enfants: document.getElementById('nb_enfants').value,
-                dateproprio: document.getElementById('date_proprio').value
-            };
-
-            Object.entries(payload).forEach(([key, value]) => {
-                if (value) {
-                    signatureUrl.searchParams.set(key, value);
-                }
-            });
-
+        http://127.0.0.1:5500/signature_locataire.html?nom=Jean+DUPONT&adr=12+rue+des+Fleurs%2C+75000+Paris&tel=0600000000&mail=jean%40test.com&entree=02%2F05%2F2026&sortie=02%2F05%2F2026&prix=260&taxe=14.4&adultes=2&enfants=1&dateproprio=02%2F05%2F2026
             return signatureUrl.toString();
         }
 
